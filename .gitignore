@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # History files
 .Rhistory
 .Rapp.history
@@ -48,12 +47,17 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
-=======
-.Rproj.user
-.Rhistory
-.RData
+
+# Data files
+
+data/
 .rds
-.Ruserdata
-.tiff
+.Rds
+
+# Images
+
+plots/
+.png
 .jpeg
->>>>>>> 044e55b (Setup git project)
+.jpg
+.tiff
