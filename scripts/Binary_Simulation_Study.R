@@ -2,12 +2,12 @@
 ## author:    Daniel Gotthardt
 ## contact:   daniel.gotthardt@studium.uni-hamburg.de / daniel.gotthardt@gmx.de
 ## file name: Simulation_Study.R
-## Context:   Master Thesis Sociology at the Universität Hamburg
+## Context:   Variability Social Cognition
 ## Input:     -
 ## Output:    Various simulated data and additional data.frames with extracted 
 ##            values from the models and simulation summaries for the different szenarios
 ## Summary:   This R-File simulates different szenarios to evaluate models
-##            for the analysis of dispersion.
+##            for the analysis of dispersion with binary predictors
 
 ## This simulation study follows broadly the advice by Morris et al 2019
 
@@ -190,7 +190,7 @@ colSums(fit.na.30)
 
 # Delete simdata to save RAM
 
-save(simdata.30, file = "binary_S1_30_simdata.rds")
+save(simdata.30, file = "data/binary_S1_30_simdata.rds")
 
 rm(list=c("simdata.30"))
 
@@ -499,7 +499,7 @@ error.30 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.30 | two
                               fit = reml.fit.30[reml.fit.na.30]),
                  QR = cbind(repetition = which(qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30), 
                             fit = qr.fit.30[qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30]))
-saveRDS(error.30, file = "binary_S1_30_errors.rds")
+saveRDS(error.30, file = "data/binary_S1_30_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -679,7 +679,7 @@ colSums(fit.na.50)
 
 # Delete simdata to save RAM
 
-save(simdata.50, file = "binary_S1_50_simdata.rds")
+save(simdata.50, file = "data/binary_S1_50_simdata.rds")
 rm(list=c("simdata.50"))
 
 ### Extract model estimates ###########################
@@ -986,7 +986,7 @@ error.50 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.50 | two
                               fit = reml.fit.50[reml.fit.na.50]),
                  QR = cbind(repetition = which(qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50), 
                             fit = qr.fit.50[qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50]))
-saveRDS(error.50, file = "binary_S1_50_errors.rds")
+saveRDS(error.50, file = "data/binary_S1_50_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -1164,7 +1164,7 @@ colSums(fit.na.1000)
 
 # Delete simdata to save RAM
 
-save(simdata.1000, file = "binary_S1_1000_simdata.rds")
+save(simdata.1000, file = "data/binary_S1_1000_simdata.rds")
 rm(list=c("simdata.1000"))
 
 ### Extract model estimates ###########################
@@ -1471,7 +1471,7 @@ error.1000 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.1000 |
                               fit = reml.fit.1000[reml.fit.na.1000]),
                  QR = cbind(repetition = which(qr.t25.fit.na.1000 | qr.t50.fit.na.1000 | qr.t75.fit.na.1000), 
                             fit = qr.fit.1000[qr.t25.fit.na.1000 | qr.t50.fit.na.1000 | qr.t75.fit.na.1000]))
-saveRDS(error.1000, file = "binary_S1_1000_errors.rds")
+saveRDS(error.1000, file = "data/binary_S1_1000_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -1653,7 +1653,7 @@ colSums(fit.na.30)
 
 # Delete simdata to save RAM
 
-save(simdata.30, file = "binary_S2_30_simdata.rds")
+save(simdata.30, file = "data/binary_S2_30_simdata.rds")
 rm(list=c("simdata.30"))
 
 ### Extract model estimates ###########################
@@ -1960,7 +1960,7 @@ error.30 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.30 | two
                               fit = reml.fit.30[reml.fit.na.30]),
                  QR = cbind(repetition = which(qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30), 
                             fit = qr.fit.30[qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30]))
-saveRDS(error.30, file = "binary_S2_30_errors.rds")
+saveRDS(error.30, file = "data/binary_S2_30_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -2138,7 +2138,7 @@ colSums(fit.na.50)
 
 
 # Delete simdata to save RAM
-save(simdata.50, file = "binary_S2_50_simdata.rds")
+save(simdata.50, file = "data/binary_S2_50_simdata.rds")
 rm(list=c("simdata.50"))
 
 ### Extract model estimates ###########################
@@ -2445,7 +2445,7 @@ error.50 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.50 | two
                               fit = reml.fit.50[reml.fit.na.50]),
                  QR = cbind(repetition = which(qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50), 
                             fit = qr.fit.50[qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50]))
-saveRDS(error.50, file = "binary_S2_50_errors.rds")
+saveRDS(error.50, file = "data/binary_S2_50_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -2622,7 +2622,7 @@ fit.na.1000 <- cbind(two.step.lm.fit.na.1000,two.step.gamma.fit.na.1000,ml.fit.n
 colSums(fit.na.1000) 
 
 # Delete simdata to save RAM
-save(simdata.1000, file = "binary_S2_1000_simdata.rds")
+save(simdata.1000, file = "data/binary_S2_1000_simdata.rds")
 rm(list=c("simdata.1000"))
 
 ### Extract model estimates ###########################
@@ -2929,7 +2929,7 @@ error.1000 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.1000 |
                               fit = reml.fit.1000[reml.fit.na.1000]),
                  QR = cbind(repetition = which(qr.t25.fit.na.1000 | qr.t50.fit.na.1000 | qr.t75.fit.na.1000), 
                             fit = qr.fit.1000[qr.t25.fit.na.1000 | qr.t50.fit.na.1000 | qr.t75.fit.na.1000]))
-saveRDS(error.1000, file = "binary_S2_1000_errors.rds")
+saveRDS(error.1000, file = "data/binary_S2_1000_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -3111,7 +3111,7 @@ fit.na.30 <- cbind(two.step.lm.fit.na.30,two.step.gamma.fit.na.30,ml.fit.na.30,r
 colSums(fit.na.30) 
 
 # Delete simdata to save RAM
-save(simdata.30, file = "binary_S4_30_simdata.rds")
+save(simdata.30, file = "data/binary_S4_30_simdata.rds")
 rm(list=c("simdata.30"))
 
 # 23 na ML, 18 na REML, 18 na GAMMA
@@ -3421,7 +3421,7 @@ error.30 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.30 | two
                               fit = reml.fit.30[reml.fit.na.30]),
                  QR = cbind(repetition = which(qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30), 
                             fit = qr.fit.30[qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30]))
-saveRDS(error.30, file = "binary_S4_30_errors.rds")
+saveRDS(error.30, file = "data/binary_S4_30_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -3604,7 +3604,7 @@ colSums(fit.na.50)
 # 11 na ML, 11 na REML, gamma 9
 
 # Delete simdata to save RAM
-save(simdata.50, file = "binary_S4_50_simdata.rds")
+save(simdata.50, file = "data/binary_S4_50_simdata.rds")
 rm(list=c("simdata.50"))
 
 ### Extract model estimates ###########################
@@ -3911,7 +3911,7 @@ error.50 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.50 | two
                               fit = reml.fit.50[reml.fit.na.50]),
                  QR = cbind(repetition = which(qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50), 
                             fit = qr.fit.50[qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50]))
-saveRDS(error.50, file = "binary_S4_50_errors.rds")
+saveRDS(error.50, file = "data/binary_S4_50_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -4094,7 +4094,7 @@ colSums(fit.na.1000)
 
 
 # Delete simdata to save RAM
-save(simdata.1000, file = "binary_S4_1000_simdata.rds")
+save(simdata.1000, file = "data/binary_S4_1000_simdata.rds")
 rm(list=c("simdata.1000"))
 
 ### Extract model estimates ###########################
@@ -4401,7 +4401,7 @@ error.1000 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.1000 |
                               fit = reml.fit.1000[reml.fit.na.1000]),
                  QR = cbind(repetition = which(qr.t25.fit.na.1000 | qr.t50.fit.na.1000 | qr.t75.fit.na.1000), 
                             fit = qr.fit.1000[qr.t25.fit.na.1000 | qr.t50.fit.na.1000 | qr.t75.fit.na.1000]))
-saveRDS(error.1000, file = "binary_S4_1000_errors.rds")
+saveRDS(error.1000, file = "data/binary_S4_1000_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -4573,7 +4573,7 @@ colSums(fit.na.30)
 
 # Delete simdata to save RAM
 
-save(simdata.30, file = "binary_S6_30_simdata.rds")
+save(simdata.30, file = "data/binary_S6_30_simdata.rds")
 rm(list=c("simdata.30"))
 
 ### Extract model estimates ###########################
@@ -4793,7 +4793,7 @@ error.30 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.30 | two
                             fit = ml.fit.30[ml.fit.na.30]),
                  REML = cbind(repetition = which(reml.fit.na.30),
                               fit = reml.fit.30[reml.fit.na.30]))
-saveRDS(error.30, file = "binary_S6_30_errors.rds")
+saveRDS(error.30, file = "data/binary_S6_30_errors.rds")
 
 
 # Delete all fits to save RAM
@@ -4922,7 +4922,7 @@ colSums(fit.na.50)
 # ML 17, REML 17, Gamma 38
 # Delete simdata to save RAM
 
-save(simdata.50, file = "binary_S6_50_simdata.rds")
+save(simdata.50, file = "data/binary_S6_50_simdata.rds")
 rm(list=c("simdata.50"))
 
 ### Extract model estimates ###########################
@@ -5141,7 +5141,7 @@ error.50 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.50 | two
                             fit = ml.fit.50[ml.fit.na.50]),
                  REML = cbind(repetition = which(reml.fit.na.50), 
                               fit = reml.fit.50[reml.fit.na.50]))
-saveRDS(error.50, file = "binary_S6_50_errors.rds")
+saveRDS(error.50, file = "data/binary_S6_50_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -5267,7 +5267,7 @@ colSums(fit.na.1000)
 
 # Delete simdata to save RAM
 
-save(simdata.1000, file = "binary_S6_1000_simdata.rds")
+save(simdata.1000, file = "data/binary_S6_1000_simdata.rds")
 rm(list=c("simdata.1000"))
 
 ### Extract model estimates ###########################
@@ -5485,7 +5485,7 @@ error.1000 <- list(Two.Step = cbind(repetition = which(two.step.lm.fit.na.1000 |
                               fit = ml.fit.1000[ml.fit.na.1000]),
                    REML = cbind(repetition = which(reml.fit.na.1000), 
                                 fit = reml.fit.1000[reml.fit.na.1000]))
-saveRDS(error.1000, file = "binary_S6_1000_errors.rds")
+saveRDS(error.1000, file = "data/binary_S6_1000_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -5614,7 +5614,7 @@ qr.t25.fit.na.30 <- !sapply(qr.sep.fit.30[["tau = 0.25"]],is.model.fun,legalmod)
 qr.t50.fit.na.30 <- !sapply(qr.sep.fit.30[["tau = 0.5"]],is.model.fun,legalmod)
 qr.t75.fit.na.30 <- !sapply(qr.sep.fit.30[["tau = 0.75"]],is.model.fun,legalmod)
 
-save(simdata.30, file = "binary_S7_30_simdata.rds")
+save(simdata.30, file = "data/binary_S7_30_simdata.rds")
 rm(list=c("simdata.30"))
 
 ### Extract model estimates ###########################
@@ -5736,7 +5736,7 @@ error.30 <- list(QR_combined = cbind(repetition = which(qr.fit.na),
                                      fit = qr.fit.30[qr.fit.na]),
                  QR_seperate = cbind(repetition = which(qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30), 
                                      fit = qr.sep.fit.30[qr.t25.fit.na.30 | qr.t50.fit.na.30 | qr.t75.fit.na.30]))
-saveRDS(error.30, file = "binary_S7_30_errors.rds")
+saveRDS(error.30, file = "data/binary_S7_30_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -5880,7 +5880,7 @@ qr.t25.fit.na.50 <- !sapply(qr.sep.fit.50[["tau = 0.25"]],is.model.fun,legalmod)
 qr.t50.fit.na.50 <- !sapply(qr.sep.fit.50[["tau = 0.5"]],is.model.fun,legalmod)
 qr.t75.fit.na.50 <- !sapply(qr.sep.fit.50[["tau = 0.75"]],is.model.fun,legalmod)
 
-save(simdata.50, file = "binary_S7_50_simdata.rds")
+save(simdata.50, file = "data/binary_S7_50_simdata.rds")
 rm(list=c("simdata.50"))
 
 ### Extract model estimates ###########################
@@ -5995,7 +5995,7 @@ error.50 <- list(QR_combined = cbind(repetition = which(qr.fit.na),
                                      fit = qr.fit.50[qr.fit.na]),
                  QR_seperate = cbind(repetition = which(qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50), 
                                      fit = qr.sep.fit.50[qr.t25.fit.na.50 | qr.t50.fit.na.50 | qr.t75.fit.na.50]))
-saveRDS(error.50, file = "binary_S7_50_errors.rds")
+saveRDS(error.50, file = "data/binary_S7_50_errors.rds")
 
 # Delete all fits to save RAM
 
@@ -6138,7 +6138,7 @@ qr.t25.fit.na.1000 <- !sapply(qr.sep.fit.1000[["tau = 0.25"]],is.model.fun,legal
 qr.t1000.fit.na.1000 <- !sapply(qr.sep.fit.1000[["tau = 0.5"]],is.model.fun,legalmod)
 qr.t75.fit.na.1000 <- !sapply(qr.sep.fit.1000[["tau = 0.75"]],is.model.fun,legalmod)
 
-save(simdata.1000, file = "binary_S7_1000_simdata.rds")
+save(simdata.1000, file = "data/binary_S7_1000_simdata.rds")
 rm(list=c("simdata.1000"))
 
 ### Extract model estimates ###########################
@@ -6253,7 +6253,7 @@ error.1000 <- list(QR_combined = cbind(repetition = which(qr.fit.na),
                                      fit = qr.fit.1000[qr.fit.na]),
                  QR_seperate = cbind(repetition = which(qr.t25.fit.na.1000 | qr.t1000.fit.na.1000 | qr.t75.fit.na.1000), 
                                      fit = qr.sep.fit.1000[qr.t25.fit.na.1000 | qr.t1000.fit.na.1000 | qr.t75.fit.na.1000]))
-saveRDS(error.1000, file = "binary_S7_1000_errors.rds")
+saveRDS(error.1000, file = "data/binary_S7_1000_errors.rds")
 
 # Delete all fits to save RAM
 
