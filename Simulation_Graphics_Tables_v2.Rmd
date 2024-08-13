@@ -1,0 +1,1275 @@
+---
+title: "Tabellen und Graphiken für Simulation mit 5000 runs"
+output: word_document
+author: Daniel Gotthardt
+context: Variability project
+---
+
+## Graphics
+
+```{r setup, echo=FALSE, results='asis', warning = FALSE, dpi=150, fig.width = 4.5,  fig.height = 3.5}
+
+
+# Clean up workspace -------------------------------------
+rm(list=ls(all.names = TRUE))
+gc()
+
+
+#install.packages("ggplot2")
+#install.packages("viridis")
+library(ggplot2)
+library(viridis)
+library(tidyverse)
+
+theme_set(theme_bw(base_size = 10,
+                   base_family = "sans"))
+
+
+#Define convenience functions
+
+## Check for extreme outliers
+is.extreme.Fun <- function(x) {
+  return(x < quantile(x, 0.25, na.rm=TRUE) - 3 * IQR(x, na.rm=TRUE) | x > quantile(x, 0.75, na.rm=TRUE) + 3 * IQR(x, na.rm=TRUE))
+}
+
+
+set.seed(42)
+
+## Plots for Simulation
+
+## Simulate exponential variance
+
+n_obs.1000 <- 1000
+
+# Set nonrandom parameters
+
+beta_0 <- 3
+beta_1 <- 0.5
+beta_2 <- 0.2
+beta_3 <- -1
+beta_4 <- -3
+
+lambda_0 <- 2
+lambda_1 <- 0.5
+lambda_2 <- 0.2
+lambda_3 <- -0.4
+sigma <- 1
+
+# Draw random data
+
+x <- runif(n_obs.1000, 1, 10)
+xx <- x^2
+z <- rbinom(n_obs.1000,1,0.5)
+xz <- x*z
+u <- sqrt(exp(lambda_0 + lambda_1*x + lambda_2*z + lambda_3*x*z))*rnorm(n_obs.1000,mean=0,sd=sigma)
+y <- beta_0+x*beta_1 + x^2*beta_2 + z*beta_3 + x*z*beta_4 + u
+y.true <- beta_0+x*beta_1 + x^2*beta_2 + z*beta_3 + x*z*beta_4
+
+expdf <- data.frame(x,xx,z,xz,u,y,y.true)
+
+
+## Simulate quadratic variance
+
+n_obs.1000 <- 1000
+
+# Set nonrandom parameters
+
+beta_0 <- 3
+beta_1 <- 0.5
+beta_2 <- 0.2
+beta_3 <- -1
+beta_4 <- -3
+
+lambda_0 <- 5
+lambda_1 <- 3
+lambda_2 <- 1
+lambda_3 <- -2
+sigma <- 1
+
+# Draw random data
+x <- runif(n_obs.1000, 1, 10)
+xx <- x^2
+z <- rbinom(n_obs.1000,1,0.5)
+xz <- x*z
+u <- (lambda_0+lambda_1*x+lambda_2*z+lambda_3*x*z)*rnorm(n_obs.1000,mean=0,sd=sigma)
+y <- beta_0+x*beta_1 + x^2*beta_2 + z*beta_3 + x*z*beta_4 + u
+y.true <- beta_0+x*beta_1 + x^2*beta_2 + z*beta_3 + x*z*beta_4
+
+lindf <- data.frame(x,xx,z,xz,u,y,y.true)
+
+
+
+# Create plot
+
+simdf <- rbind(data.frame(expdf, Scenario=rep("Scenario 6",1000)),
+                    data.frame(lindf, Scenario=rep("Scenario 7",1000)))
+simdf$z <- factor(simdf$z, labels=c("z=0","z=1"))
+
+
+simexample <- ggplot(simdf, aes(x=x,y=y, color=Scenario, linetype=z)) + 
+  geom_point(size=0.2, alpha=0.5) +
+  geom_line(aes(x=x, y=y.true), size=1) +
+  facet_grid(z~Scenario) +
+  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
+  scale_fill_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
+  guides(shape = guide_legend(override.aes = list(alpha= 1)))
+
+
+
+
+simexample
+
+```
+
+## I Scenario 3 Null with Non-linear mean model 
+
+
+```{r echo=FALSE, results='asis', warning = FALSE, dpi=150, fig.width = 4.5,  fig.height = 3.5}
+
+
+
+# I Scenario Null with Non-linear mean model --------------------------
+## Load Data
+
+est.long.30 <- readRDS(file="data/S3_Nullx2_est_long_30.rds")
+est.30.agg <- readRDS(file="data/S3_Nullx2_est_agg_30.rds")
+est.long.50 <- readRDS(file="data/S3_Nullx2_est_long_50.rds")
+est.50.agg <- readRDS(file="data/S3_Nullx2_est_agg_50.rds")
+est.long.1000 <- readRDS(file="data/S3_Nullx2_est_long_1000.rds")
+est.1000.agg <- readRDS(file="data/S3_Nullx2_est_agg_1000.rds")
+
+## Data preperation
+
+est.n <- merge(est.long.30,est.long.50, by=c("repetition","model","coef.type"), suffixes=c(".30",".50"))
+est.n <- merge(est.n, est.long.1000, by=c("repetition","model","coef.type"))
+colnames(est.n)[(ncol(est.n)-8):ncol(est.n)] <- c( "coef.1000", "se.1000", "p.1000","true.1000", "bias.1000", "ci_lo.1000", "ci_hi.1000", "cover.1000", "reject.1000")
+est.n.graph <- reshape(est.n, 
+                      direction ="long", 
+                      idvar= c("repetition","model","coef.type"), 
+                      varying = 4:(ncol(est.n)),
+                      timevar ="n_obs")
+est.n.graph$coef.type <- sapply(strsplit(est.n.graph$coef.type,"_"),
+                                function(vec) 
+                                  do.call(sprintf, c(list("widehat(%s)[%s]"),vec
+                                  )))
+est.n.graph$n_obs <- factor(sprintf("n = %s",est.n.graph$n_obs),
+                            levels=c("n = 30", "n = 50", "n = 1000"))
+est.n.graph$model <- factor(est.n.graph$model,
+                            levels=c("Two-Step", "ML", "REML","QR"))
+
+est.n.agg <- merge(est.30.agg,est.50.agg, by=c("repetition","model","coef.type"), suffixes=c(".30",".50"))
+est.n.agg <- merge(est.n.agg, est.1000.agg, by=c("repetition","model","coef.type"))
+colnames(est.n.agg)[(ncol(est.n.agg)-12):ncol(est.n.agg)] <- sprintf("%s.1000",colnames(est.n.agg)[(ncol(est.n.agg)-12):ncol(est.n.agg)])
+est.n.agg.graph <- reshape(est.n.agg, 
+                          direction ="long", 
+                          idvar= c("repetition","model","coef.type"), 
+                          varying = 4:(ncol(est.n.agg)),
+                          timevar ="n_obs")
+est.n.agg.graph$coef.type <- sapply(strsplit(est.n.agg.graph$coef.type,"_"),
+                                    function(vec) 
+                                      do.call(sprintf, c(list("widehat(%s)[%s]"),vec
+                                      )))
+est.n.agg.graph$n_obs <- factor(sprintf("n = %s",est.n.agg.graph$n_obs),
+                                levels=c("n = 30", "n = 50", "n = 1000"))
+est.n.agg.graph$model <- factor(est.n.agg.graph$model,
+                                levels=c("Two-Step", "ML", "REML","QR"))
+
+## Delete temporary variables
+rm(list=ls()[! (ls() %in% lsf.str() |ls() %in% c("est.n.agg.graph","est.n.graph"))])
+   
+
+   
+## Histogram of lambda_1 for all n_obs ####
+
+hist.coef.n <- ggplot(data=est.n.graph, aes(x=coef)) +
+  geom_histogram(color="black", fill="grey",binwidth = function(x) 2 * IQR(x) / (length(x)^(1/3)),na.rm=T) + #Freedman-Diaconis Rule for binwidth
+  labs(x="",y="f")
+
+hist.coef.n %+% subset(est.n.graph, coef.type %in% "widehat(lambda)[1]") +
+  facet_grid(n_obs~model) + 
+  geom_vline(data=subset(est.n.agg.graph, coef.type %in% "widehat(lambda)[1]"), aes(xintercept=coef),
+             size=1, linetype="dashed") +
+  labs(x=bquote(widehat(lambda)[1]))                                           
+
+
+## Boxplot of lambda_1 for all n_obs ####
+
+box.coef.n <- ggplot(data=est.n.graph, aes(y=model, x=coef)) +
+  geom_boxplot(width=0.5)  
+
+box.coef.n %+% subset(est.n.graph, coef.type %in% "widehat(lambda)[1]") +
+  facet_grid(n_obs~.) + 
+  labs(x=bquote(widehat(lambda)[1]), y="method") + 
+  geom_vline(data=subset(est.n.agg.graph, coef.type %in% "widehat(lambda)[1]"), aes(xintercept=0),
+                                                        size=0.5, color="grey", linetype="dashed")
+  
+## Check for outliers
+
+est.n.graph.split <- split(est.n.graph, list(est.n.graph$n_obs, est.n.graph$coef.type, est.n.graph$model))
+est.n.graph.split <- lapply(est.n.graph.split, transform, outlier = is.extreme.Fun(coef))
+est.n.graph <- unsplit(est.n.graph.split,list(est.n.graph$n_obs, est.n.graph$coef.type, est.n.graph$model))
+
+est.n.graph[which(est.n.graph$outlier),c("n_obs","coef.type","model","repetition","coef")]
+est.n.graph[which(est.n.graph$outlier),c("coef")] <- NA
+
+## Histogram without outlier
+
+hist.coef.n <- ggplot(data=est.n.graph, aes(x=coef)) +
+  geom_histogram(color="black", fill="grey",binwidth = function(x) 2 * IQR(x) / (length(x)^(1/3)),na.rm=T) + #Freedman-Diaconis Rule for binwidth
+  labs(x="",y="f")
+
+hist.coef.n %+% subset(est.n.graph, coef.type %in% "widehat(lambda)[1]") +
+  facet_grid(n_obs~model) +
+  geom_vline(data=subset(est.n.agg.graph, coef.type %in% "widehat(lambda)[1]"), aes(xintercept=coef),
+             size=1, linetype="dashed") +
+  labs(x=bquote(widehat(lambda)[1]))
+
+
+```
+
+## II Scenario 4 Null with vertical Outlier
+
+
+```{r echo=FALSE, results='asis', warning = FALSE, dpi=150, fig.width = 4.5,  fig.height = 3.5}
+
+# II Scenario Null with vertical Outlier --------------------------
+## Load Data
+
+est.long.30 <- readRDS(file="data/S4_Nullout_est_long_30.rds")
+est.30.agg <- readRDS(file="data/S4_Nullout_est_agg_30.rds")
+est.long.50 <- readRDS(file="data/S4_Nullout_est_long_50.rds")
+est.50.agg <- readRDS(file="data/S4_Nullout_est_agg_50.rds")
+est.long.1000 <- readRDS(file="data/S4_Nullout_est_long_1000.rds")
+est.1000.agg <- readRDS(file="data/S4_Nullout_est_agg_1000.rds")
+
+## Data preperation
+
+est.n <- merge(est.long.30,est.long.50, by=c("repetition","model","coef.type"), suffixes=c(".30",".50"))
+est.n <- merge(est.n, est.long.1000, by=c("repetition","model","coef.type"))
+colnames(est.n)[(ncol(est.n)-8):ncol(est.n)] <- c( "coef.1000", "se.1000", "p.1000","true.1000", "bias.1000", "ci_lo.1000", "ci_hi.1000", "cover.1000", "reject.1000")
+est.n.graph <- reshape(est.n, 
+                       direction ="long", 
+                       idvar= c("repetition","model","coef.type"), 
+                       varying = 4:(ncol(est.n)),
+                       timevar ="n_obs")
+est.n.graph$coef.type <- sapply(strsplit(est.n.graph$coef.type,"_"),
+                                function(vec) 
+                                  do.call(sprintf, c(list("widehat(%s)[%s]"),vec
+                                  )))
+est.n.graph$n_obs <- factor(sprintf("n = %s",est.n.graph$n_obs),
+                            levels=c("n = 30", "n = 50", "n = 1000"))
+est.n.graph$model <- factor(est.n.graph$model,
+                            levels=c("Two-Step", "ML", "REML","QR"))
+
+est.n.agg <- merge(est.30.agg,est.50.agg, by=c("repetition","model","coef.type"), suffixes=c(".30",".50"))
+est.n.agg <- merge(est.n.agg, est.1000.agg, by=c("repetition","model","coef.type"))
+colnames(est.n.agg)[(ncol(est.n.agg)-12):ncol(est.n.agg)] <- sprintf("%s.1000",colnames(est.n.agg)[(ncol(est.n.agg)-12):ncol(est.n.agg)])
+est.n.agg.graph <- reshape(est.n.agg, 
+                           direction ="long", 
+                           idvar= c("repetition","model","coef.type"), 
+                           varying = 4:(ncol(est.n.agg)),
+                           timevar ="n_obs")
+est.n.agg.graph$coef.type <- sapply(strsplit(est.n.agg.graph$coef.type,"_"),
+                                    function(vec) 
+                                      do.call(sprintf, c(list("widehat(%s)[%s]"),vec
+                                      )))
+est.n.agg.graph$n_obs <- factor(sprintf("n = %s",est.n.agg.graph$n_obs),
+                                levels=c("n = 30", "n = 50", "n = 1000"))
+est.n.agg.graph$model <- factor(est.n.agg.graph$model,
+                                levels=c("Two-Step", "ML", "REML","QR"))
+
+## Delete temporary variables
+rm(list=ls()[! (ls() %in% lsf.str() |ls() %in% c("est.n.agg.graph","est.n.graph"))])
+
+## Check for outliers
+
+est.n.graph.split <- split(est.n.graph, list(est.n.graph$n_obs, est.n.graph$coef.type, est.n.graph$model))
+est.n.graph.split <- lapply(est.n.graph.split, transform, outlier = is.extreme.Fun(coef))
+est.n.graph <- unsplit(est.n.graph.split,list(est.n.graph$n_obs, est.n.graph$coef.type, est.n.graph$model))
+
+est.n.graph[which(est.n.graph$outlier),c("n_obs","coef.type","model","repetition","coef","se")]
+
+# the ML-fit for repetition 328 is extremely bad (-10^14 bzw. 10^15 statt 0) 
+# and needs to be eliminated to allow for plotting; mean is also highly distorted
+
+est.n.graph[which(abs(est.n.graph$coef) >= 100),c("coef","se")] <- NA
+est.n.agg.graph[which(abs(est.n.agg.graph$coef) >= 100),c("coef","se")] <- NA
+
+
+## Histogram of lambda_1 for all n_obs ####
+
+hist.coef.n <- ggplot(data=est.n.graph, aes(x=coef)) +
+  geom_histogram(color="black", fill="grey",binwidth = function(x) 2 * IQR(x) / (length(x)^(1/3)),na.rm=T) + #Freedman-Diaconis Rule for binwidth
+  labs(x="",y="f")
+
+hist.coef.n %+% subset(est.n.graph, coef.type %in% "widehat(lambda)[1]") +
+  facet_grid(n_obs~model) +
+  geom_vline(data=subset(est.n.agg.graph, coef.type %in% "widehat(lambda)[1]"), aes(xintercept=coef),
+             size=1, linetype="dashed") +
+  labs(x=bquote(widehat(lambda)[1]))
+
+
+## Boxplot of lambda_1 for all n_obs ####
+
+box.coef.n <- ggplot(data=est.n.graph, aes(y=model, x=coef)) +
+  geom_boxplot(width=0.5)  
+
+box.coef.n %+% subset(est.n.graph, coef.type %in% "widehat(lambda)[1]") +
+  facet_grid(n_obs~.) + 
+  labs(x=bquote(widehat(lambda)[1]), y="method") + 
+  geom_vline(data=subset(est.n.agg.graph, coef.type %in% "widehat(lambda)[1]"), aes(xintercept=0),
+             size=0.5, color="grey", linetype="dashed")
+
+# ## Histogram of se lambda_1 for all n_obs ####
+# 
+# hist.se.n <- ggplot(data=est.n.graph, aes(x=se)) +
+#   geom_histogram(color="black", fill="grey",binwidth = function(x) 2 * IQR(x) / (length(x)^(1/3)),na.rm=T) + #Freedman-Diaconis Rule for binwidth
+#   labs(x="",y="f")
+# 
+# hist.se.n %+% subset(est.n.graph, coef.type %in% "widehat(lambda)[1]" & model != "QR") +
+#   facet_grid(n_obs~model) + 
+#   geom_vline(data=subset(est.n.agg.graph, coef.type %in% "widehat(lambda)[1]" & model != "QR"), aes(xintercept=se),
+#              size=1, linetype="dashed") +
+#   labs(x=bquote(SE(widehat(lambda)[1])))                                            
+# 
+# 
+# ## Boxplot of se lambda_1 for all n_obs ####
+# 
+# box.se.n <- ggplot(data=est.n.graph, aes(y=model, x=se)) +
+#   geom_boxplot(width=0.5)  
+# 
+# box.se.n %+% subset(est.n.graph, (coef.type %in% "widehat(lambda)[1]" & model != "QR")) +
+#   facet_grid(n_obs~.) + 
+#   labs(x=bquote(SE(widehat(lambda)[1])), y="method") + 
+#   geom_vline(data=subset(est.n.agg.graph, coef.type %in% "widehat(lambda)[1]" & model != "QR"), aes(xintercept=0),
+#              size=0.5, color="grey", linetype="dashed")
+
+
+## Relative %-Error in ModSE
+
+est.n.agg.graph$relse <- 100*(est.n.agg.graph$modelse/est.n.agg.graph$empse-1)
+
+```
+
+## II Scenario 7 Lin
+
+
+```{r echo=FALSE, results='asis', warning = FALSE, dpi=150, fig.width = 4.5,  fig.height = 3.5}
+
+
+
+# III Scenario 7 Lin ----------------------------------------
+
+## Load Data
+
+est.long.30 <- readRDS(file="data/S7_Lin_est_long_30.rds")
+est.30.agg <- readRDS(file="data/S7_Lin_est_agg_long_30.rds")
+est.long.50 <- readRDS(file="data/S7_Lin_est_long_50.rds")
+est.50.agg <- readRDS(file="data/S7_Lin_est_agg_long_50.rds")
+est.long.1000 <- readRDS(file="data/S7_Lin_est_long_1000.rds")
+est.1000.agg <- readRDS(file="data/S7_Lin_est_agg_long_1000.rds")
+
+## Prepare Data
+
+## Data preperation
+
+est.n <- merge(est.long.30,est.long.50, by=c("repetition","tau","coef.type"), suffixes=c(".30",".50"))
+est.n <- merge(est.n, est.long.1000, by=c("repetition","tau","coef.type"))
+colnames(est.n)[(ncol(est.n)-4):ncol(est.n)] <- c( "coef.1000", "se.1000", "true.1000", "ci_lo.1000", "ci_hi.1000")
+est.n.graph <- reshape(est.n, 
+                       direction ="long", 
+                       idvar= c("repetition","tau","coef.type"), 
+                       varying = 4:(ncol(est.n)),
+                       timevar ="n_obs")
+# est.n.graph$coef.type <- sapply(strsplit(est.n.graph$coef.type,"_"),
+#                                 function(vec) 
+#                                   do.call(sprintf, c(list("widehat(%s)[%s]"),vec
+#                                   )))
+est.n.graph$n_obs <- factor(sprintf("n = %s",est.n.graph$n_obs),
+                             levels=c("n = 30", "n = 50", "n = 1000"))
+# est.n.graph$model <- factor(est.n.graph$model,
+#                             levels=c("Two-Step", "ML", "REML","QR"))
+
+
+## Delete temporary variables
+rm(list=ls()[! (ls() %in% lsf.str() |ls() %in% c("est.n.agg.graph","est.n.graph"))])
+
+## Check for outliers
+
+est.n.graph.split <- split(est.n.graph, list(est.n.graph$n_obs, est.n.graph$coef.type, est.n.graph$tau))
+est.n.graph.split <- lapply(est.n.graph.split, transform, outlier = is.extreme.Fun(coef))
+est.n.graph <- unsplit(est.n.graph.split,list(est.n.graph$n_obs, est.n.graph$coef.type, est.n.graph$tau))
+
+est.n.graph[which(est.n.graph$outlier),c("n_obs","coef.type","tau","repetition","coef","se")]
+
+
+# ## Histogram of beta_1 for all n_obs ####
+# 
+# hist.coef.n <- ggplot(data=est.n.graph, aes(x=coef)) +
+#   geom_histogram(color="black", fill="grey",binwidth = function(x) 2 * IQR(x) / (length(x)^(1/3)),na.rm=T) + #Freedman-Diaconis Rule for binwidth
+#   labs(x="",y="f")
+# 
+# hist.coef.n %+% subset(est.n.graph, coef.type %in% "x") +
+#   facet_grid(n_obs~tau) + 
+#   geom_vline(aes(xintercept=true),
+#               size=1, color="blue", linetype="solid") +
+#   labs(x=bquote(widehat(beta)[1]))
+# 
+# ## Boxplot of beta_1 for all n_obs ####
+# 
+# box.coef.n <- ggplot(data=est.n.graph, aes(y=tau, x=coef)) +
+#   geom_boxplot(width=0.5)  
+# 
+# box.coef.n %+% subset(est.n.graph, coef.type %in% "x") +
+#   facet_grid(n_obs~.) + 
+#   labs(x=bquote(widehat(beta)[1]), y="Quantil") + 
+#   geom_vline(aes(xintercept=true),
+#             size=0.5, color="blue", linetype="solid")
+
+# Calculate diff for each simulation
+est.n.diff <- reshape(est.n.graph, direction = "wide",
+                      idvar=c("repetition","coef.type","n_obs"),
+                      timevar="tau")
+est.n.diff$diff <- est.n.diff$coef.Tau75-est.n.diff$coef.Tau25
+est.n.diff$truediff <- est.n.diff$true.Tau75-est.n.diff$true.Tau25
+
+
+## Histogram of beta_1 diff ####
+
+hist.coef.n <- ggplot(data=est.n.diff, aes(x=diff, color=n_obs, fill=n_obs)) +
+  geom_histogram(alpha=0.4, position="identity",
+                 binwidth = function(x) 2 * IQR(x) / (length(x)^(1/3)),na.rm=T) + #Freedman-Diaconis Rule for binwidth
+  labs(x="",y="f")  +
+  scale_color_viridis(discrete = TRUE, option="inferno", begin=0.2, end=0.7, direction=-1) +
+  scale_fill_viridis(discrete = TRUE, option="inferno", begin=0.2, end=0.7, direction=-1)
+
+hist.coef.n %+% subset(est.n.diff, (coef.type %in% "x")) +
+  geom_vline(aes(xintercept=truediff),
+             size=1, color="black", linetype="dashed") +
+  labs(x=bquote(widehat(beta)[1][tau[75]]-widehat(beta)[1][tau[25]]))
+
+## Boxplot of all diffs #####
+
+box.coef.n <- ggplot(data=est.n.diff, aes(x=diff, y=n_obs, color=n_obs, fill=n_obs)) +
+  geom_boxplot(alpha=0.7, show.legend = FALSE) +
+  geom_vline(aes(xintercept=truediff),
+             size=0.5, linetype="dashed") +
+  scale_color_viridis(discrete = TRUE, option="inferno", begin=0.2, end=0.7, direction=-1) +
+  scale_fill_viridis(discrete = TRUE, option="inferno", begin=0.2, end=0.7, direction=-1)
+
+
+box.coef.n %+% subset(est.n.diff, !(coef.type %in% "(Intercept)")) +
+  facet_wrap(~coef.type, nrow=2, ncol=2, scales="free_x") + 
+  labs(x=bquote(widehat(beta)[tau[75]]-widehat(beta)[tau[25]]), y ="") 
+
+
+
+
+```
+
+## Tables 
+
+### Rejection for Null (lambda and beta) ###
+
+```{r echo=FALSE, results='asis', warning = FALSE,}
+
+library(pander)
+panderOptions("knitr.auto.asis",FALSE)
+# Sys.setlocale("LC_NUMERIC","de_DE") # change for Linux; doesn't work in Windows
+
+estimands <- c("beta_1","lambda_1")
+perform <- c("reject")
+
+# n = 30
+
+est.30.agg <- readRDS("data/S1_DoppelNull_est_agg_30.rds")
+est.30.agg <- subset(est.30.agg, coef.type %in% estimands)
+
+est.30.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.30.agg$reject, digits=3), round(est.30.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 30")
+
+est.table.30 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.30.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+# n = 50
+
+est.50.agg <- readRDS("data/S1_DoppelNull_est_agg_50.rds")
+est.50.agg <- subset(est.50.agg, coef.type %in% estimands)
+
+
+est.50.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.50.agg$reject, digits=3), round(est.50.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 50")
+
+est.table.50 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.50.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+# n = 1000
+
+est.1000.agg <- readRDS("data/S1_DoppelNull_est_agg_1000.rds")
+est.1000.agg <- subset(est.1000.agg, coef.type %in% estimands)
+
+
+est.1000.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.1000.agg$reject, digits=3), round(est.1000.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 1000")
+
+est.table.1000 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.1000.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+rejectiontable <- rbind(do.call(rbind, est.table.30), do.call(rbind, est.table.50), do.call(rbind, est.table.1000))
+
+pandoc.table(rejectiontable, split.table = Inf, keep.line.breaks = TRUE,
+             justify = c("left","left","centre","centre"),
+             row.names = FALSE,
+             missing=""
+            )
+
+```
+
+### Rejection for Null (lambda only) ###
+
+
+```{r echo=FALSE, results='asis'}
+
+library(pander)
+panderOptions("knitr.auto.asis",FALSE)
+# Sys.setlocale("LC_NUMERIC","de_DE") # change for Linux; doesn't work in Windows
+
+estimands <- c("beta_1","lambda_1")
+perform <- c("reject")
+
+# n = 30
+
+est.30.agg <- readRDS("data/S2_Null_est_agg_30.rds")
+est.30.agg <- subset(est.30.agg, coef.type %in% estimands)
+
+est.30.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.30.agg$reject, digits=3), round(est.30.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 30")
+
+est.table.30 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.30.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+# n = 50
+
+est.50.agg <- readRDS("data/S2_Null_est_agg_50.rds")
+est.50.agg <- subset(est.50.agg, coef.type %in% estimands)
+
+
+est.50.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.50.agg$reject, digits=3), round(est.50.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 50")
+
+est.table.50 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.50.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+# n = 1000
+
+est.1000.agg <- readRDS("data/S2_Null_est_agg_1000.rds")
+est.1000.agg <- subset(est.1000.agg, coef.type %in% estimands)
+
+
+est.1000.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.1000.agg$reject, digits=3), round(est.1000.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 1000")
+
+est.table.1000 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.1000.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+rejectiontable <- rbind(do.call(rbind, est.table.30), do.call(rbind, est.table.50), do.call(rbind, est.table.1000))
+
+pandoc.table(rejectiontable, split.table = Inf, keep.line.breaks = TRUE,
+             justify = c("left","left","centre","centre"),
+             row.names = FALSE,
+             missing=""
+            )
+
+```
+
+### Rejection for Null (lambda only) und mispecified linear mean model for nonlinear datageneration
+
+
+```{r echo=FALSE, results='asis'}
+
+library(pander)
+panderOptions("knitr.auto.asis",FALSE)
+# Sys.setlocale("LC_NUMERIC","de_DE") # change for Linux; doesn't work in Windows
+
+estimands <- c("beta_1","lambda_1")
+perform <- c("reject")
+
+# n = 30
+
+est.30.agg <- readRDS("data/S3_Nullx2_est_agg_30.rds")
+est.30.agg <- subset(est.30.agg, coef.type %in% estimands)
+
+est.30.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.30.agg$reject, digits=3), round(est.30.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 30")
+
+est.table.30 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.30.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+# n = 50
+
+est.50.agg <- readRDS("data/S3_Nullx2_est_agg_50.rds")
+est.50.agg <- subset(est.50.agg, coef.type %in% estimands)
+
+
+est.50.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.50.agg$reject, digits=3), round(est.50.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 50")
+
+est.table.50 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.50.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+# n = 1000
+
+est.1000.agg <- readRDS("data/S3_Nullx2_est_agg_1000.rds")
+est.1000.agg <- subset(est.1000.agg, coef.type %in% estimands)
+
+
+est.1000.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.1000.agg$reject, digits=3), round(est.1000.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 1000")
+
+est.table.1000 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.1000.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+ rejectiontable <- rbind(do.call(rbind, est.table.30), do.call(rbind, est.table.50), do.call(rbind, est.table.1000))
+ 
+ pandoc.table(rejectiontable, split.table = Inf, keep.line.breaks = TRUE,
+              justify = c("left","left","centre","centre"),
+              row.names = FALSE,
+              missing=""
+             )
+
+```
+
+
+### Rejection for Dopplnull (lambda and beta) with vertical outliers / influential outliers
+
+
+```{r echo=FALSE, results='asis'}
+
+library(pander)
+panderOptions("knitr.auto.asis",FALSE)
+# Sys.setlocale("LC_NUMERIC","de_DE") # change for Linux; doesn't work in Windows
+
+estimands <- c("beta_1","lambda_1")
+perform <- c("reject")
+
+# n = 30
+
+est.30.agg <- readRDS("data/S4_Nullout_est_agg_30.rds")
+est.30.agg <- subset(est.30.agg, coef.type %in% estimands)
+
+est.30.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.30.agg$reject, digits=3), round(est.30.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 30")
+
+est.table.1.30 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.30.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+# n = 50
+
+est.50.agg <- readRDS("data/S4_Nullout_est_agg_50.rds")
+est.50.agg <- subset(est.50.agg, coef.type %in% estimands)
+
+
+est.50.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.50.agg$reject, digits=3), round(est.50.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 50")
+
+est.table.1.50 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.50.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+# n = 1000
+
+est.1000.agg <- readRDS("data/S4_Nullout_est_agg_1000.rds")
+est.1000.agg <- subset(est.1000.agg, coef.type %in% estimands)
+
+
+est.1000.agg$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.1000.agg$reject, digits=3), round(est.1000.agg$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 1000")
+
+est.table.1.1000 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.1000.agg[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+rejectiontable.1 <- rbind(do.call(rbind, est.table.1.30), do.call(rbind, est.table.1.50), do.call(rbind, est.table.1.1000))
+
+# n = 30
+
+est.30.agg.2 <- readRDS("data/S5_Nullinf_est_agg_30.rds")
+est.30.agg.2 <- subset(est.30.agg.2, coef.type %in% estimands)
+
+est.30.agg.2$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.30.agg.2$reject, digits=3), round(est.30.agg.2$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 30")
+
+est.table.2.30 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.30.agg.2[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)  
+  return(var=table)
+})
+
+# n = 50
+
+est.50.agg.2 <- readRDS("data/S5_Nullinf_est_agg_50.rds")
+est.50.agg.2 <- subset(est.50.agg.2, coef.type %in% estimands)
+
+
+est.50.agg.2$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.50.agg.2$reject, digits=3), round(est.50.agg.2$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 50")
+
+est.table.2.50 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.50.agg.2[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+# n = 1000
+
+est.1000.agg.2 <- readRDS("data/S5_Nullinf_est_agg_1000.rds")
+est.1000.agg.2 <- subset(est.1000.agg.2, coef.type %in% estimands)
+
+
+est.1000.agg.2$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.1000.agg.2$reject, digits=3), round(est.1000.agg.2$rejection_mcse, digits=3))
+
+names(perform) <- c("H_0 rejection rate , n = 1000")
+
+est.table.2.1000 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.1000.agg.2[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- table[order(factor(table$model, levels = c("Two-Step", "ML","REML", "QR"))),]
+  table <- cbind(c(NA,NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+ rejectiontable.2 <- rbind(do.call(rbind, est.table.2.30), do.call(rbind, est.table.2.50), do.call(rbind, est.table.2.1000))
+ 
+rejectiontable.12 <- cbind(rejectiontable.1, rejectiontable.2[,c(3,4)])
+rejectiontable.12 <- rbind(c(colnames(rejectiontable.1),colnames(rejectiontable.2[,c(3,4)])), rejectiontable.12)
+colnames(rejectiontable.12) <- c("","","10 % Vertical Outlier", "", "10 % Influential Outlier","")
+ 
+ pandoc.table(rejectiontable.12, split.table = Inf, keep.line.breaks = TRUE,
+              justify = c("left","left","centre","centre","centre","centre"),
+              row.names = FALSE,
+              missing=""
+             )
+
+```
+
+### Scenario 6 - Varianzmodelle bei exponentieller Streuung ##
+
+#### N = 30 und N = 50
+
+```{r echo=FALSE, results='asis'}
+
+
+# as we use pander inside Rmarkdown, we have to set the asis option
+library(pander)
+panderOptions("knitr.auto.asis",FALSE)
+# Sys.setlocale("LC_NUMERIC","de_DE") # change for Linux; doesn't work in Windows
+
+estimands <- c("lambda_0","lambda_1","lambda_2","lambda_3") 
+method <- c("Two-Step", "ML","REML")
+perform <- c("bias", "empse", "cover")
+
+### Rsimsum tables for n = 30
+
+ms.summ.30 <- readRDS("data/S6_Exp_ms_summ_30.rds")
+ms.summ.30$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.30$est, digits=3), round(ms.summ.30$mcse, digits=3))
+# ms.summ.30[] <- lapply(ms.summ.30, as.character)
+
+ms.summ.30 <-  subset(ms.summ.30, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+perform <- c("bias","empse","cover")
+names(perform) <- c("Bias of point estimates, n = 30",
+               "Empirical SE of point estimates, n = 30",
+               "Coverage rate of 95%-interval, n = 30")
+
+ms.table.30 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.30[ms.summ.30[,"stat"]==perform[var],c("model","coef.type","est_mcse")], direction="wide",
+                   idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+### Rsimsum tables for n = 50
+
+ms.summ.50 <- readRDS("data/S6_Exp_ms_summ_50.rds")
+ms.summ.50$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.50$est, digits=3), round(ms.summ.50$mcse, digits=3))
+# ms.summ.50[] <- lapply(ms.summ.50, as.character)
+
+ms.summ.50 <-  subset(ms.summ.50, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+perform <- c("bias","empse","cover")
+names(perform) <- c("Bias of point estimates, n = 50",
+               "Empirical SE of point estimates, n = 50",
+               "Coverage rate of 95%-interval, n = 50")
+
+ms.table.50 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.50[ms.summ.50[,"stat"]==perform[var],c("model","coef.type","est_mcse")], direction="wide",
+                   idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+simsumtable.1 <- rbind(do.call(rbind, ms.table.30), do.call(rbind, ms.table.50))
+
+pandoc.table(simsumtable.1, split.table = Inf, keep.line.breaks = TRUE,
+             justify = c("left","left","centre","centre","centre","centre"),
+             row.names = FALSE,
+             missing=""
+            )
+
+```
+
+#### S6 für n = 1000
+```{r echo=FALSE, results='asis'}
+### Rsimsum tables for n = 1000
+
+ms.summ.1000 <- readRDS("data/S6_Exp_ms_summ_1000.rds")
+ms.summ.1000$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.1000$est, digits=3), round(ms.summ.1000$mcse, digits=3))
+# ms.summ.1000[] <- lapply(ms.summ.1000, as.character)
+
+ms.summ.1000 <-  subset(ms.summ.1000, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+perform <- c("bias","empse","cover")
+names(perform) <- c("Bias of point estimates, n = 1000",
+               "Empirical SE of point estimates, n = 1000",
+               "Coverage rate of 95%-interval, n = 1000")
+
+ms.table.1000 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.1000[ms.summ.1000[,"stat"]==perform[var],c("model","coef.type","est_mcse")], direction="wide",
+                   idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",estimands)
+  return(var=table)
+})
+
+simsumtable.2 <- do.call(rbind, ms.table.1000)
+
+pandoc.table(simsumtable.2, split.table = Inf, keep.line.breaks = TRUE,
+             justify = c("left","left","centre","centre","centre","centre"),
+             row.names = FALSE,
+             missing=""
+            )
+
+```
+
+### Scenario 7 - Quantreg bei linearer Streuung ##
+
+#### N = 30 und N = 50
+
+```{r echo=FALSE, results='asis'}
+
+# as we use pander inside Rmarkdown, we have to set the asis option
+library(pander)
+panderOptions("knitr.auto.asis",FALSE)
+# Sys.setlocale("LC_NUMERIC","de_DE") # change for Linux; doesn't work in Windows
+
+estimands <- c("(Intercept)","x","xx","z", "xz")
+names(estimands) <- c("beta_0", "beta_1", "beta_2", "beta_3", "beta_4")
+tau <- c(0.25, 0.5,0.75)
+perform <- c("bias", "empse", "cover")
+
+### Rsimsum tables for n = 30
+
+est.agg.30 <- readRDS("data/S7_Lin_est_agg_long_30.rds")
+ms.summ.30 <- readRDS("data/S7_Lin_ms_summ_30.rds")
+ms.summ.30$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.30$est, digits=3), round(ms.summ.30$mcse, digits=3))
+# ms.summ.30[] <- lapply(ms.summ.30, as.character)
+
+ms.summ.30 <- subset(ms.summ.30, coef.type %in% estimands)
+
+perform <- c("bias","empse","cover")
+names(perform) <- c("Bias of point estimates, n = 30",
+               "Empirical SE of point estimates, n = 30",
+               "Coverage rate of 95%-interval, n = 30")
+
+ms.table.30 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.30[ms.summ.30[,"stat"]==perform[var],c("tau","coef.type","est_mcse")], direction="wide",
+                   idvar="tau", timevar ="coef.type")
+    table <- table[order(factor(table$tau, levels = c("Tau25", "Tau50","Tau75", "QR"))),]
+  table <- cbind(c(NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",names(estimands))
+  return(var=table)
+})
+
+### Rsimsum tables for n = 50
+
+ms.summ.50 <- readRDS("data/S7_Lin_ms_summ_50.rds")
+ms.summ.50$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.50$est, digits=3), round(ms.summ.50$mcse, digits=3))
+# ms.summ.50[] <- lapply(ms.summ.50, as.character)
+
+ms.summ.50 <- subset(ms.summ.50, coef.type %in% estimands)
+
+perform <- c("bias","empse","cover")
+names(perform) <- c("Bias of point estimates, n = 50",
+               "Empirical SE of point estimates, n = 50",
+               "Coverage rate of 95%-interval, n = 50")
+
+ms.table.50 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.50[ms.summ.50[,"stat"]==perform[var],c("tau","coef.type","est_mcse")], direction="wide",
+                   idvar="tau", timevar ="coef.type")
+  table <- table[order(factor(table$tau, levels = c("Tau25", "Tau50","Tau75", "QR"))),]
+  table <- cbind(c(NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",names(estimands))
+  return(var=table)
+})
+
+
+simsumtable.1 <- rbind(do.call(rbind, ms.table.30), do.call(rbind, ms.table.50))
+
+pandoc.table(simsumtable.1, split.table = Inf, keep.line.breaks = TRUE,
+             justify = c("left","left","centre","centre","centre","centre","centre"),
+             row.names = FALSE,
+             missing=""
+            )
+
+```
+
+
+#### S7 für n = 1000
+```{r echo=FALSE, results='asis'}
+### Rsimsum tables for n = 1000
+
+ms.summ.1000 <- readRDS("data/S7_Lin_ms_summ_1000.rds")
+ms.summ.1000$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.1000$est, digits=3), round(ms.summ.1000$mcse, digits=3))
+# ms.summ.1000[] <- lapply(ms.summ.1000, as.character)
+
+ms.summ.1000 <- subset(ms.summ.1000, coef.type %in% estimands)
+
+perform <- c("bias","empse","cover")
+names(perform) <- c("Bias of point estimates, n = 1000",
+               "Empirical SE of point estimates, n = 1000",
+               "Coverage rate of 95%-interval, n = 1000")
+
+ms.table.1000 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.1000[ms.summ.1000[,"stat"]==perform[var],c("tau","coef.type","est_mcse")], direction="wide",
+                   idvar="tau", timevar ="coef.type") 
+  table <- table[order(factor(table$tau, levels = c("Tau25", "Tau50","Tau75", "QR"))),]
+  table <- cbind(c(NA,NA,NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",names(estimands))
+  return(var=table)
+})
+
+simsumtable.2 <- do.call(rbind, ms.table.1000)
+
+pandoc.table(simsumtable.2, split.table = Inf, keep.line.breaks = TRUE,
+             justify = c("left","left","centre","centre","centre","centre","centre"),
+             row.names = FALSE,
+             missing=""
+            )
+
+```
+
+#### S7 Tabelle für die Differenz
+
+```{r echo=FALSE, results='asis'}
+
+# as we use pander inside Rmarkdown, we have to set the asis option
+library(pander)
+panderOptions("knitr.auto.asis",FALSE)
+# Sys.setlocale("LC_NUMERIC","de_DE") # change for Linux; doesn't work in Windows
+
+estimands <- c("x","xx","z", "xz")
+names(estimands) <- c("beta_1", "beta_2", "beta_3", "beta_4")
+
+### self calculated values for n = 30
+
+est.agg.30 <- readRDS("data/S7_Lin_est_agg_long_30.rds")
+est.agg.30$model <- "QR"
+
+est.agg.30 <- subset(est.agg.30, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+est.agg.30$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.agg.30$reject, digits=3), round(est.agg.30$rejection_mcse, digits=3))
+
+perform <- c("reject")
+names(perform) <- c("H_0 rejection rate , n = 30")
+
+
+
+est.table.30 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.agg.30[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",names(estimands))  
+  return(var=table)
+})
+
+### Rsimsum tables for n = 30
+ms.summ.30<- readRDS("data/S7_Lin_diff_ms_summ_30.rds")
+ms.summ.30$model <- "QR"
+
+
+ms.summ.30$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.30$est, digits=3), round(ms.summ.30$mcse, digits=3))
+
+ms.summ.30 <-  subset(ms.summ.30, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+perform <- c("bias","empse")
+names(perform) <- c("Bias of point estimates, n = 30",
+               "Empirical SE of point estimates, n = 30")
+
+ms.table.30 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.30[ms.summ.30[,"stat"]==perform[var],c("model","coef.type","est_mcse")], direction="wide",
+                   idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",names(estimands))
+  return(var=table)
+})
+
+### self calculated values for n = 50
+
+est.agg.50 <- readRDS("data/S7_Lin_est_agg_long_50.rds")
+
+est.agg.50$rejection_mcse <- sqrt((est.agg.50$p*(1-est.agg.50$p)/2000))
+est.agg.50$model <- "QR"
+
+est.agg.50 <- subset(est.agg.50, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+est.agg.50$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.agg.50$reject, digits=3), round(est.agg.50$rejection_mcse, digits=3))
+
+perform <- c("reject")
+names(perform) <- c("H_0 rejection rate , n = 50")
+
+
+
+est.table.50 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.agg.50[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",names(estimands))  
+  return(var=table)
+})
+
+### Rsimsum tables for n = 50
+ms.summ.50<- readRDS("data/S7_Lin_diff_ms_summ_50.rds")
+ms.summ.50$model <- "QR"
+
+
+ms.summ.50$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.50$est, digits=3), round(ms.summ.50$mcse, digits=3))
+
+ms.summ.50 <- subset(ms.summ.50, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+perform <- c("bias","empse")
+names(perform) <- c("Bias of point estimates, n = 50",
+               "Empirical SE of point estimates, n = 50")
+
+ms.table.50 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.50[ms.summ.50[,"stat"]==perform[var],c("model","coef.type","est_mcse")], direction="wide",
+                   idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",names(estimands))
+  return(var=table)
+})
+
+
+
+### self calculated values for n = 1000
+
+est.agg.1000 <- readRDS("data/S7_Lin_est_agg_long_1000.rds")
+est.agg.1000$model <- "QR"
+
+est.agg.1000 <- subset(est.agg.1000, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+est.agg.1000$rejection_mcse <- sqrt((est.agg.1000$p*(1-est.agg.1000$p)/2000))
+
+
+est.agg.1000$reject <- sprintf("%0.3f\\\n(%0.3f)", round(est.agg.1000$reject, digits=3), round(est.agg.1000$rejection_mcse, digits=3))
+
+perform <- c("reject")
+names(perform) <- c("H_0 rejection rate , n = 1000")
+
+
+
+est.table.1000 <- lapply(names(perform), function(var){
+  sub <- c("model","coef.type",perform[var])
+  table <- reshape(est.agg.1000[,sub], direction="wide",
+          idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA), table)
+   colnames(table) <- c("","",names(estimands))  
+  return(var=table)
+})
+
+### Rsimsum tables for n = 1000
+ms.summ.1000<- readRDS("data/S7_Lin_diff_ms_summ_1000.rds")
+ms.summ.1000$model <- "QR"
+
+
+ms.summ.1000$est_mcse <- sprintf("%0.3f\\\n(%0.3f)", round(ms.summ.1000$est, digits=3), round(ms.summ.1000$mcse, digits=3))
+
+ms.summ.1000 <- subset(ms.summ.1000, coef.type %in% estimands) %>%
+    mutate(coef.type =  factor(coef.type, levels = estimands)) %>%
+    arrange(coef.type)
+
+perform <- c("bias","empse")
+names(perform) <- c("Bias of point estimates, n = 1000",
+               "Empirical SE of point estimates, n = 1000")
+
+ms.table.1000 <- lapply(names(perform), function(var){
+  table <- reshape(ms.summ.1000[ms.summ.1000[,"stat"]==perform[var],c("model","coef.type","est_mcse")], direction="wide",
+                   idvar="model", timevar ="coef.type")
+  table <- cbind(c(NA),table)
+  table <- rbind(c(var,NA,NA,NA,NA,NA,NA,NA), table)
+  colnames(table) <- c("","",names(estimands))
+  return(var=table)
+})
+
+simsumtable.1 <- rbind(do.call(rbind, ms.table.30), do.call(rbind, est.table.30),
+                       do.call(rbind, ms.table.50), do.call(rbind, est.table.50),
+                       do.call(rbind, ms.table.1000), do.call(rbind, est.table.1000))
+
+pandoc.table(simsumtable.1, split.table = Inf, keep.line.breaks = TRUE,
+             justify = c("left","left","centre","centre","centre","centre"),
+             row.names = FALSE,
+             missing=""
+            )
+
+```
