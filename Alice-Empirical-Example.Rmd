@@ -1,0 +1,92 @@
+---
+title: "Alice-Data-Analysis"
+author: "Daniel Gotthardt"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Setup ----------------------
+## Clean up workspace -------------------------------------
+rm(list=ls(all.names = TRUE))
+gc()
+
+## Load packages -----
+library(ggplot2)
+library(viridis)
+library(ggpubr)
+library(patchwork)
+library(tidyverse)
+library(broom)
+library(marginaleffects)
+library(texreg)
+
+## Load data -----
+
+mydata <- readRDS("data/Simulated_Empirical_Data.Rds")
+
+# Graphical exploration ----
+
+theme_set(theme_bw(base_size = 10,
+                   base_family = "sans"))
+
+```
+\newpage
+
+## variance function regression
+
+```{r prototype, warning = FALSE}
+library(dglm)
+# Fit variance function regression with dglm
+vfr <- dglm(data=mydata,
+            # formula specifies the mean model
+            formula = Y.obs ~ X.mean + I(X.mean^2) + Z,
+            # dformula specifies the variance (dispersion) model
+            # the model does not have to be the same!
+            dformula = Y.obs ~ X.mean + I(X.mean^2) + Z, 
+            # Alice models the mean model as gaussian
+            family = gaussian(link = "identity"), 
+            # dlink specifies the link-function for the dispersion
+            dlink = "log", 
+            # reml should be used for all but very large sample sizes
+            method="reml")
+# Summary shows all important results, while print only shows the mean model!
+summary(vfr)
+```
+
+\newpage
+
+## quantile regression
+
+```{r quantile1, warning = FALSE, message = FALSE}
+library(quantreg)
+# Define quantiles to fitted
+quantiles <- c(0.1,0.25,0.5,0.75,0.9)
+# Fit quantile regression
+quant <- rq(formula = Y.obs ~ X.mean + I(X.mean^2) + Z, 
+            tau = quantiles, 
+            data = mydata)
+# Print provides a nice overview of all results but does not compute SE
+print(quant)
+# Use summary with se = "rank" or "boot" to not require iid errors
+summary(quant, se = "rank") 
+```
+\newpage
+```{r quantile2, warning = FALSE}
+# Anova.rq with joint = FALSE allows to compare the coeficients between all taus
+anova(quant, joint = FALSE, iid = FALSE)
+# Fit quantiles seperately
+out50 <- rq(Y.obs ~ X.mean+I(X.mean^2)+Z, 
+            data=mydata,tau=c(0.5))
+out90 <- rq(Y.obs ~ X.mean+I(X.mean^2)+Z, 
+            data=mydata,tau=c(0.9))
+out75 <- rq(Y.obs ~ X.mean+I(X.mean^2)+Z, 
+            data=mydata,tau=c(0.75))
+out25 <- rq(Y.obs ~ X.mean+I(X.mean^2)+Z, 
+            data=mydata,tau=c(0.25))
+out10 <- rq(Y.obs ~ X.mean+I(X.mean^2)+Z, 
+            data=mydata,tau=c(0.1))
+# Anova can be used to compare specific quantiles for seperate fits
+anova(out90, out10, joint = FALSE, iid = FALSE)
+```

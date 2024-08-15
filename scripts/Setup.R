@@ -10,6 +10,7 @@ pck_names <- c("ggplot2",
                "statmod",
                "rsimsum",
                "MASS",
+               "marginaleffects",
                "broom",
                "texreg")
 

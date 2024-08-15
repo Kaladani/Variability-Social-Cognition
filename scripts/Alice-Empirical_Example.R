@@ -25,6 +25,7 @@ library(dglm)
 library(quantreg)
 library(broom)
 library(texreg)
+library(marginaleffects)
 
 ## Load data -----
 
@@ -168,7 +169,18 @@ vfr <- dglm(data=mydata,
             dlink = "log", 
             method="reml")
 summary(vfr)
-anova(vfr)
+
+slopes(vfr, variables = "X.mean", dispersion =1)
+plot_slopes(vfr, variables = "X.mean",
+            condition = "X.mean", dispersion =1)
+avg_slopes(vfr, variables = "X.mean", dispersion =1)
+
+
+plot_slopes(vfr$dispersion.fit, variables = "X.mean",
+            condition = "X.mean", dispersion =2)
+avg_slopes(vfr$dispersion.fit, variables = "X.mean", dispersion =2)
+
+
 
 vfr_table <- list(beta = vfr, 
                   lambda = vfr$dispersion.fit)

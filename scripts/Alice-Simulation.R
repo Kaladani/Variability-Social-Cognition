@@ -59,10 +59,10 @@ plot(X,Y)
 
 mydata_a <- data.frame(X = X, X = Y)
 p_a <- ggplot(data = mydata_a, aes(x = X, y = Y)) + 
-  geom_point(size=2, alpha=0.5) +
+  geom_point(size=1, alpha=0.3) +
   geom_smooth(method = "loess", se = FALSE) +
   # geom_density_2d(alpha = 0.5) +
-  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
+  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
   ylim(c(0,1)) + xlim(c(0,1)) +
   labs(x = "Prototype Valence", y = "Prosocialness") +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
@@ -77,28 +77,28 @@ ggsave(file="Plot_Prototype-Theory-a-Simulation.tiff", p_a,
 ggsave(file="Plot_Prototype-Theory-a-Simulation.jpeg", p_a, 
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
-Resid <- sqrt((Y - (Y_exp))^2)
+Resid2 <- (Y - (Y_exp))^2
 
-plot(X, Resid)
+plot(X, Resid2)
 
-mydata_a <- data.frame(X = X, Resid = Resid)
-p_a_resid <- ggplot(data = mydata_a, aes(x = X, y = Resid)) + 
-  geom_point(size=2, alpha=0.5) +
+mydata_a <- data.frame(X = X, Resid2 = Resid2)
+p_a_resid2 <- ggplot(data = mydata_a, aes(x = X, y = Resid2)) + 
+  geom_point(size=1, alpha=0.3) +
   geom_smooth(method = "loess", se = FALSE) +
   # geom_density_2d(alpha = 0.5) +
-  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
-  ylim(c(0,0.4)) + xlim(c(0,1)) +
-  labs(x = "Prototype Valence", y = expression(sqrt(epsilon^2))) +
+  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
+  ylim(c(0,0.15)) + xlim(c(0,1)) +
+  labs(x = "Prototype Valence", y = expression(epsilon^2)) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
   scale_fill_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
   guides(shape = guide_legend(override.aes = list(alpha= 1)))
 
-p_a_resid
+p_a_resid2
 
-ggsave(file="Plot_Prototype-Theory-a-Simulation-Residuals.tiff", p_a_resid, 
+ggsave(file="Plot_Prototype-Theory-a-Simulation-Residuals.tiff", p_a_resid2, 
        device = tiff, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
-ggsave(file="Plot_Prototype-Theory-a-Simulation-Residuals.jpeg", p_a_resid, 
+ggsave(file="Plot_Prototype-Theory-a-Simulation-Residuals.jpeg", p_a_resid2, 
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
 ## 1b Attraction ----
@@ -107,7 +107,7 @@ n_obs <- 1000
 
 X <- rnormt(n_obs, c(0,1), 0.5, 0.2)
 
-pre <- rnormc(n_obs, 0.25, 0.1)
+pre <- rnormc(n_obs, c(0,1), 0.25, 0.2)
 
 Y_attractor <- 0.5*X+0.25
 
@@ -127,10 +127,10 @@ plot(X,Y)
 mydata_b <- data.frame(X = X, Y = Y)
 
 p_b <- ggplot(data = mydata_b, aes(x = X, y = Y)) + 
-  geom_point(size=2, alpha=0.5) +
+  geom_point(size=1, alpha=0.3) +
   geom_smooth(method = "loess", se = FALSE) +
   # geom_density_2d(alpha = 0.5) +
-  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
+  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
   labs(x = "Prototype Valence", y = "Prosocialness") +
   ylim(c(0,1)) + xlim(c(0,1)) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
@@ -146,28 +146,28 @@ ggsave(file="Plot_Prototype-Theory-b-Simulation.jpeg", p_b,
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
 
-Resid <- sqrt((Y - Y_exp)^2)
+Resid2 <- (Y - Y_exp)^2
 
-plot(X, Resid)
+plot(X, Resid2)
 
-mydata_b <- data.frame(pre = pre, X = X, Resid = Resid)
-p_b_resid <- ggplot(data = mydata_b, aes(x = X, y = Resid)) + 
-  geom_point(size=2, alpha=0.5) +
+mydata_b <- data.frame(pre = pre, X = X, Resid2 = Resid2)
+p_b_resid2 <- ggplot(data = mydata_b, aes(x = X, y = Resid2)) + 
+  geom_point(size=1, alpha=0.3) +
   geom_smooth(method = "loess", se = FALSE) +
   # geom_density_2d(alpha = 0.5) +
-  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
-  ylim(c(0,0.4)) + xlim(c(0,1)) +
-  labs(x = "Prototype Valence", y = expression(sqrt(epsilon^2))) +
+  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
+  ylim(c(0,0.15)) + xlim(c(0,1)) +
+  labs(x = "Prototype Valence", y = expression(epsilon^2)) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
   scale_fill_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
   guides(shape = guide_legend(override.aes = list(alpha= 1)))
 
-p_b_resid
+p_b_resid2
 
-ggsave(file="Plot_Prototype-Theory-b-Simulation-Residuals.tiff", p_b_resid, 
+ggsave(file="Plot_Prototype-Theory-b-Simulation-Residuals.tiff", p_b_resid2, 
        device = tiff, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
-ggsave(file="Plot_Prototype-Theory-b-Simulation-Residuals.jpeg", p_b_resid, 
+ggsave(file="Plot_Prototype-Theory-b-Simulation-Residuals.jpeg", p_b_resid2, 
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
 ### Test analysis with predictions ----
@@ -238,14 +238,14 @@ anova(vfr)
 
 mydata <- data.frame(X = X, Y = Y)
 p_b_quantile <- ggplot(data = mydata, aes(x = X, y = Y)) + 
-  geom_point(alpha=0.5, size=1) +
-  # geom_boxplot(aes(group= cut_width(X,0.1)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
+  geom_point(alpha=0.3, size=1) +
+  # geom_boxplot(aes(group= cut_width(X,0.1)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
   geom_quantile(
     method = "rqss", quantiles = c(0.1,0.25,0.5,0.75,0.9)
     # formula = y ~ x+I(abs(x)*x), quantiles = c(0.1,0.25,0.5,0.75,0.9), 
     , color="darkblue") +
   # geom_density_2d(alpha = 0.5) +
-  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
+  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
   labs(x = "Prototype Valence", y = "Prosocialness") +
   ylim(c(0,1)) + xlim(c(0,1)) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
@@ -391,7 +391,7 @@ Y <- rnormc(n_obs, c(0,1), Y_exp, 0.05)
 mydata_c <- data.frame(X_mean = X_mean, Y = Y)
 
 p_c <- ggplot(data = mydata_c, aes(x = X_mean, y = Y)) + 
-  geom_point(size=2, alpha=0.5) +
+  geom_point(size=1, alpha=0.3) +
   geom_smooth(method = "loess", se = FALSE) +
   labs(x = "Avg. Exemplar Valence", y = "Prosocialness") +
   xlim(c(0,1)) + ylim(c(0,1)) + 
@@ -405,53 +405,38 @@ ggsave(file="Plot_Exemplar-Theory-Simulation.tiff", p_c,
 ggsave(file="Plot_Exemplar-Theory-Simulation.jpeg", p_c, 
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
-Resid <- sqrt((Y - (0.25+0.5*X_mean))^2)
+Resid2 <- (Y - (0.25+0.5*X_mean))^2
 
-# plot(X_mean, Resid)
-
-# mydata_c <- data.frame(X_mean = X_mean, Resid = Resid)
-# p_c_resid <- ggplot(data = mydata_c, aes(x = X_mean, y = Resid)) + 
-#   geom_point(size=2, alpha=0.5) +
-#   geom_smooth(method = "loess", se = FALSE) +
-#   # geom_density_2d(alpha = 0.5) +
-#   # geom_coxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
-#   labs(y = expression(sqrt(epsilon^2))) +
-#   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
-#   scale_fill_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
-#   guides(shape = guide_legend(override.aes = list(alpha= 1)))
-# 
-# p_c_resid
-
-# plot(Z, Resid)
+plot(X, Resid2)
 
 
-mydata_c <- data.frame(Z = Z, Resid = Resid)
-p_c_resid <- ggplot(data = mydata_c, aes(x = Z, y = Resid)) + 
-  geom_point(size=2, alpha=0.5) +
+mydata_c <- data.frame(Z = Z, Resid2 = Resid2)
+p_c_resid2 <- ggplot(data = mydata_c, aes(x = Z, y = Resid2)) + 
+  geom_point(size=1, alpha=0.3) +
   geom_smooth(method = "loess", se = FALSE) +
   # geom_density_2d(alpha = 0.5) +
-  # geom_coxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
-  labs(x = "Var. Exemplar Valence", y = expression(sqrt(epsilon^2))) +
-  ylim(c(0,0.4)) + xlim(c(0,1)) +
+  # geom_coxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
+  labs(x = "Var. Exemplar Valence", y = expression(epsilon^2)) +
+  ylim(c(0,0.15)) + xlim(c(0,1)) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
   scale_fill_viridis(discrete = TRUE, begin=0.1, end=0.7, option="inferno") +
   guides(shape = guide_legend(override.aes = list(alpha= 1)))
 
-p_c_resid
+p_c_resid2
 
-ggsave(file="Plot_Exemplar-Theory-Simulation-Residuals.tiff", p_c_resid, 
+ggsave(file="Plot_Exemplar-Theory-Simulation-Residuals.tiff", p_c_resid2, 
        device = tiff, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
-ggsave(file="Plot_Exemplar-Theory-Simulation-Residuals.jpeg", p_c_resid, 
+ggsave(file="Plot_Exemplar-Theory-Simulation-Residuals.jpeg", p_c_resid2, 
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
 # combined
 mydata_c_comb <- data.frame(X_mean = X_mean, Z = Z, Y = Y)
 p_c_comb <- ggplot(data = mydata_c_comb, aes(x = X_mean, y = Y, color = Z, fill = Z)) + 
-  geom_point(size=2, alpha=0.5) +
+  geom_point(size=1, alpha=0.3) +
   geom_smooth(method = "loess", se = FALSE) +
   # geom_density_2d(alpha = 0.5) +
-  # geom_c_comboxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
+  # geom_c_comboxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
   labs(x = "Avg. Exemplar Valence", y = "Prosocialness") +
   ylim(c(0,1)) + 
   scale_color_viridis(begin=0.1, end=0.7, option="inferno") +
@@ -521,14 +506,14 @@ summary(vfr)
 anova(vfr)
 
 p_c_quantile <- ggplot(data = mydata, aes(x = Z, y = Y)) + 
-  geom_point(alpha=0.5, size=1) +
-  #geom_boxplot(aes(group= cut_width(Z,0.05)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
+  geom_point(alpha=0.3, size=1) +
+  #geom_boxplot(aes(group= cut_width(Z,0.05)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
   geom_quantile(
     method = "rqss", quantiles = c(0.1,0.25,0.5,0.75,0.9)
     #formula = y ~ x, quantiles = c(0.1,0.25,0.5,0.75,0.9)
     , color="darkblue") +
   # geom_density_2d(alpha = 0.5) +
-  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.5) +
+  # geom_boxplot(aes(group= cut_width(X,0.2)), outlier.shape=NA, varwidth=TRUE,fill="grey", alpha=0.3) +
   labs(x = "Var. Exemplar Valence", y = "Prosocialness") +
   ylim(c(0,1)) + xlim(c(0,1)) +
   scale_color_viridis(begin=0.1, end=0.7, option="inferno") +
@@ -645,7 +630,7 @@ ggsave(file="Plot_Exemplar-Theory-b-Simulation-Predicted-SD-Plot.jpeg", sd.predi
 
 ## Combine plots ----
 
-p_b_both <- p_b + p_b_resid +
+p_b_both <- p_b + p_b_resid2 +
   plot_layout(nrow=1, ncol = 2)
 
 p_b_both
@@ -656,7 +641,7 @@ ggsave(file="Plot_Simulation_Data_1b_together.tiff", p_b_both,
 ggsave(file="Plot_Simulation_Data_1b_together.jpeg", p_b_both, 
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
-p_c_both <- p_c + p_c_resid +
+p_c_both <- p_c + p_c_resid2 +
   plot_layout(nrow=1, ncol = 2)
 
 p_c_both
@@ -667,17 +652,17 @@ ggsave(file="Plot_Simulation_Data_2_together.tiff", p_c_both,
 ggsave(file="Plot_Simulation_Data_2_together.jpeg", p_c_both, 
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
-p_b_c <- (p_b / p_c) +
-  plot_layout(axis_titles = "collect_y") |
-  (p_b_resid / p_c_resid) +
-  plot_layout(axis_titles = "collect_y")
-
+p_b_c <- ((p_b | p_c) + plot_layout(axes = "collect")) /
+  ((p_b_resid2 | p_c_resid2) +   plot_layout(axes = "collect"))
 
 p_b_c <- p_b_c + plot_annotation(tag_levels = "a",
                                        tag_suffix = ")",
                                        tag_prefix = "(") &
-theme(plot.tag.position = c(0, 1),
-        plot.tag = element_text(size = 8, hjust = -1, vjust = 0, color = "black", face = "bold", family = "sans")) 
+theme(plot.tag.position = c("topleft"),
+      plot.tag.location = c("panel"),
+        plot.tag = element_text(size = 8, hjust = 0.5, vjust = 0, color = "black", face = "bold", family = "sans")) 
+
+p_b_c
 
 ggsave(file="Plot_Simulation_Data_1b_2_together.tiff", p_b_c, 
        device = tiff, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
@@ -686,17 +671,15 @@ ggsave(file="Plot_Simulation_Data_1b_2_together.jpeg", p_b_c,
        device = jpeg, width = 114.3, height = 88.9, units = "mm", limitsize = FALSE, dpi = 600)
 
 
-p_all <- (p_a / p_b / p_c) +
-  plot_layout(axis_titles = "collect_y") |
-  (p_a_resid / p_b_resid / p_c_resid) +
-  plot_layout(axis_titles = "collect_y")
-  
+p_all <- ((p_a | p_b | p_c) + plot_layout(axes = "collect_y")) /
+  ((p_a_resid2 | p_b_resid2 | p_c_resid2) +   plot_layout(axes = "collect_y"))
 
 p_all <- p_all + plot_annotation(tag_levels = "a",
-                                       tag_suffix = ")",
-                                       tag_prefix = "(") &
-  theme(plot.tag.position = c(0, 1),
-        plot.tag = element_text(size = 8, hjust = -1, vjust = 0, color = "black", face = "bold", family = "sans")) 
+                                 tag_suffix = ")",
+                                 tag_prefix = "(") &
+  theme(plot.tag.position = c("topleft"),
+        plot.tag.location = c("panel"),
+        plot.tag = element_text(size = 8, hjust = 0.5, vjust = 0, color = "black", face = "bold", family = "sans")) 
 
 p_all
 
